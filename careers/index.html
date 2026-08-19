@@ -4,112 +4,168 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Collective Solar — Careers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --charcoal:#1c1c1e;
-    --charcoal-deep:#0f0f10;
+    --charcoal-deep:#0a0a0b;
     --white:#f7f7f5;
-    --off-white:#c9c9c6;
-    --line:#3a3a3c;
+    --off-white:#b6b6b2;
+    --line:#2c2c2e;
+    --line-soft:#232325;
     --accent:#e8e8e3;
+    --signal:#5b6b5f;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html{scroll-behavior:smooth;}
   body{
-    background:var(--charcoal-deep);
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(90,110,95,0.14), transparent 60%),
+      var(--charcoal-deep);
     color:var(--white);
-    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-family:'Inter',Arial,sans-serif;
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
   }
+  h1, .brand, .num, button.submit{font-family:'Archivo',Arial,sans-serif;}
   .wrap{max-width:640px;margin:0 auto;padding:0 24px;}
 
   /* Header */
   header{
-    padding:32px 0 24px;
+    padding:30px 0 22px;
     border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;
   }
   .brand{
-    letter-spacing:0.16em;
-    font-size:13px;
-    text-transform:uppercase;
-    font-weight:700;
+    letter-spacing:0.02em;
+    font-size:16px;
+    font-weight:800;
     color:var(--white);
+  }
+  .brand span{color:var(--signal);}
+  .signal-dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--signal);
+    position:relative;
+    flex-shrink:0;
+  }
+  .signal-dot::before,.signal-dot::after{
+    content:"";
+    position:absolute;top:50%;left:50%;
+    width:7px;height:7px;
+    border-radius:50%;
+    border:1px solid var(--signal);
+    transform:translate(-50%,-50%);
+    opacity:0;
+    animation:ping 2.6s ease-out infinite;
+  }
+  .signal-dot::after{animation-delay:1.3s;}
+  @keyframes ping{
+    0%{width:7px;height:7px;opacity:0.7;}
+    100%{width:34px;height:34px;opacity:0;}
+  }
+  .header-status{
+    display:flex;align-items:center;gap:8px;
+    font-size:11px;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--off-white);
+  }
+  @media(prefers-reduced-motion: reduce){
+    .signal-dot::before,.signal-dot::after{animation:none;}
   }
 
   /* Hero */
-  .hero{padding:64px 0 40px;}
+  .hero{padding:56px 0 36px;}
   .eyebrow{
-    font-size:12px;
+    display:inline-block;
+    font-size:11px;
     letter-spacing:0.12em;
     text-transform:uppercase;
-    color:var(--off-white);
-    margin-bottom:18px;
+    color:var(--signal);
+    font-weight:600;
+    margin-bottom:22px;
+    padding:5px 12px;
+    border:1px solid var(--signal);
+    border-radius:100px;
   }
   h1{
-    font-size:38px;
-    line-height:1.12;
-    font-weight:700;
-    letter-spacing:-0.01em;
-    margin-bottom:20px;
+    font-size:42px;
+    line-height:1.06;
+    font-weight:800;
+    letter-spacing:-0.015em;
+    margin-bottom:22px;
   }
   .sub{
     font-size:16px;
-    line-height:1.6;
+    line-height:1.65;
     color:var(--off-white);
     max-width:480px;
-    margin-bottom:32px;
+    margin-bottom:30px;
   }
   .quote{
-    font-size:15px;
+    font-size:14.5px;
     font-style:italic;
     color:var(--accent);
-    border-left:2px solid var(--white);
+    border-left:2px solid var(--signal);
     padding-left:16px;
-    margin-bottom:36px;
+    margin-bottom:8px;
     max-width:440px;
+    line-height:1.5;
   }
 
   /* Facts strip */
   .facts{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    border-top:1px solid var(--line);
-    border-bottom:1px solid var(--line);
-    margin-bottom:48px;
+    background:var(--charcoal);
+    border:1px solid var(--line);
+    border-radius:10px;
+    margin:40px 0 12px;
+    overflow:hidden;
   }
   .fact{
-    padding:20px 0;
+    padding:22px 18px;
     text-align:left;
   }
-  .fact:not(:last-child){border-right:1px solid var(--line);padding-right:16px;}
-  .fact:not(:first-child){padding-left:16px;}
-  .fact .num{font-size:22px;font-weight:700;margin-bottom:4px;}
-  .fact .lbl{font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--off-white);}
+  .fact:not(:last-child){border-right:1px solid var(--line);}
+  .fact .num{font-size:24px;font-weight:800;margin-bottom:5px;letter-spacing:-0.01em;}
+  .fact .lbl{font-size:10.5px;letter-spacing:0.05em;text-transform:uppercase;color:var(--off-white);}
+  .pay-note{font-size:12px;color:var(--off-white);margin:0 0 44px;line-height:1.5;}
 
   /* Section titles */
   .section-title{
-    font-size:12px;
+    display:flex;align-items:center;gap:10px;
+    font-size:11px;
     letter-spacing:0.12em;
     text-transform:uppercase;
-    color:var(--off-white);
-    margin-bottom:20px;
+    color:var(--signal);
+    font-weight:600;
+    margin-bottom:22px;
+  }
+  .section-title::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line);
   }
 
-  section{padding:40px 0;border-top:1px solid var(--line);}
+  section{padding:38px 0;border-top:1px solid var(--line-soft);}
 
   ul.plain{list-style:none;}
   ul.plain li{
     position:relative;
-    padding-left:20px;
-    margin-bottom:14px;
+    padding-left:22px;
+    margin-bottom:15px;
     font-size:15px;
-    line-height:1.55;
+    line-height:1.6;
     color:var(--accent);
   }
   ul.plain li::before{
-    content:"—";
-    position:absolute;left:0;color:var(--off-white);
+    content:"";
+    position:absolute;left:0;top:9px;
+    width:6px;height:1.5px;
+    background:var(--signal);
   }
 
   /* Form */
@@ -118,33 +174,34 @@
   label{
     display:block;
     font-size:11px;
-    letter-spacing:0.08em;
+    letter-spacing:0.06em;
     text-transform:uppercase;
     color:var(--off-white);
     margin-bottom:8px;
   }
   input,select{
     width:100%;
-    background:transparent;
+    background:var(--charcoal);
     border:1px solid var(--line);
     color:var(--white);
     padding:14px 14px;
     font-size:15px;
-    border-radius:2px;
+    border-radius:6px;
     font-family:inherit;
+    transition:border-color 0.15s ease;
   }
   input:focus,select:focus{
     outline:none;
-    border-color:var(--white);
+    border-color:var(--signal);
   }
   select{appearance:none;}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .checkline{
     display:flex;align-items:flex-start;gap:10px;
     font-size:13px;color:var(--off-white);
-    margin-bottom:24px;
+    margin-bottom:26px;
   }
-  .checkline input{width:auto;margin-top:3px;}
+  .checkline input{width:auto;margin-top:3px;accent-color:var(--signal);}
 
   button.submit{
     width:100%;
@@ -154,13 +211,14 @@
     padding:16px;
     font-size:14px;
     font-weight:700;
-    letter-spacing:0.06em;
-    text-transform:uppercase;
-    border-radius:2px;
+    letter-spacing:0.03em;
+    border-radius:6px;
     cursor:pointer;
+    transition:background 0.15s ease, transform 0.1s ease;
   }
-  button.submit:hover{background:var(--off-white);}
-  button.submit:disabled{opacity:0.5;cursor:default;}
+  button.submit:hover{background:var(--accent);}
+  button.submit:active{transform:scale(0.99);}
+  button.submit:disabled{opacity:0.5;cursor:default;transform:none;}
 
   .status{
     margin-top:14px;
@@ -171,17 +229,17 @@
   .status.show{display:block;}
 
   footer{
-    padding:32px 0 60px;
+    padding:36px 0 60px;
     font-size:12px;
     color:var(--line);
     text-align:center;
+    display:flex;align-items:center;justify-content:center;gap:8px;
   }
 
   @media(max-width:480px){
-    h1{font-size:30px;}
-    .facts{grid-template-columns:1fr;}
-    .fact:not(:last-child){border-right:none;border-bottom:1px solid var(--line);padding-right:0;padding-bottom:16px;}
-    .fact:not(:first-child){padding-left:0;padding-top:16px;}
+    h1{font-size:32px;}
+    .facts{grid-template-columns:1fr;border-radius:10px;}
+    .fact:not(:last-child){border-right:none;border-bottom:1px solid var(--line);}
     .row2{grid-template-columns:1fr;}
   }
 </style>
@@ -190,7 +248,8 @@
 
 <div class="wrap">
   <header>
-    <div class="brand">Collective Solar</div>
+    <div class="brand">Collective <span>Solar</span></div>
+    <div class="header-status"><span class="signal-dot"></span> Hiring now</div>
   </header>
 
   <div class="hero">
@@ -205,7 +264,7 @@
     <div class="fact"><div class="num">Remote</div><div class="lbl">Mon–Fri, weekends off</div></div>
     <div class="fact"><div class="num">C1</div><div class="lbl">Advanced English</div></div>
   </div>
-  <p style="font-size:12px;color:var(--off-white);margin:-32px 0 40px;">*Base pay plus uncapped bonus/commission. $2,100 is the average total for setters hitting normal performance — not a guarantee.</p>
+  <p class="pay-note">*Base pay plus uncapped bonus/commission. $2,100 is the average total for setters hitting normal performance — not a guarantee.</p>
 
   <section>
     <div class="section-title">What you'll do</div>
@@ -280,7 +339,7 @@
     </form>
   </section>
 
-  <footer>Collective Solar &nbsp;·&nbsp; careers.collectivesolar.io</footer>
+  <footer><span class="signal-dot" style="animation:none;"></span> Collective Solar &nbsp;·&nbsp; careers.collectivesolar.io</footer>
 </div>
 
 <script>
