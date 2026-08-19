@@ -30,33 +30,11 @@
     border-bottom:1px solid var(--line);
   }
   .brand{
-    display:flex;align-items:center;gap:10px;
-    letter-spacing:0.14em;
+    letter-spacing:0.16em;
     font-size:13px;
     text-transform:uppercase;
-    font-weight:600;
+    font-weight:700;
     color:var(--white);
-  }
-  .globe{
-    width:16px;height:16px;
-    border:1.4px solid var(--white);
-    border-radius:50%;
-    position:relative;
-    flex-shrink:0;
-  }
-  .globe::before{
-    content:"";
-    position:absolute;top:0;left:50%;
-    width:1.4px;height:100%;
-    background:var(--white);
-    transform:translateX(-50%);
-  }
-  .globe::after{
-    content:"";
-    position:absolute;top:50%;left:0;
-    width:100%;height:1.4px;
-    background:var(--white);
-    transform:translateY(-50%);
   }
 
   /* Hero */
@@ -212,37 +190,48 @@
 
 <div class="wrap">
   <header>
-    <div class="brand"><span class="globe"></span> Collective</div>
+    <div class="brand">Collective Solar</div>
   </header>
 
   <div class="hero">
     <div class="eyebrow" id="eyebrow">Now hiring — remote</div>
-    <h1 id="headline">Book appointments. Get paid per deal. Work from anywhere.</h1>
-    <p class="sub" id="subhead">Collective Solar is hiring bilingual appointment setters to call U.S. homeowners and book solar consultations. English required. Remote. Performance-based pay.</p>
+    <h1 id="headline">Book appointments. Base pay plus uncapped bonuses. Work from anywhere.</h1>
+    <p class="sub" id="subhead">Collective Solar is hiring bilingual appointment setters to call U.S. homeowners and book solar consultations. Advanced English required. 100% remote. Base salary plus uncapped bonus.</p>
     <div class="quote">"Work before work. I don't expect effort from anyone I'm not willing to give first." — Collective Solar</div>
   </div>
 
   <div class="facts">
-    <div class="fact"><div class="num" id="fact-pay">$3,000</div><div class="lbl">Per funded deal</div></div>
-    <div class="fact"><div class="num">Remote</div><div class="lbl">Work from home</div></div>
-    <div class="fact"><div class="num">English</div><div class="lbl">Required</div></div>
+    <div class="fact"><div class="num" id="fact-pay">$2,100</div><div class="lbl" id="fact-pay-label">Avg. USD/month*</div></div>
+    <div class="fact"><div class="num">Remote</div><div class="lbl">Mon–Fri, weekends off</div></div>
+    <div class="fact"><div class="num">C1</div><div class="lbl">Advanced English</div></div>
   </div>
+  <p style="font-size:12px;color:var(--off-white);margin:-32px 0 40px;">*Base pay plus uncapped bonus/commission. $2,100 is the average total for setters hitting normal performance — not a guarantee.</p>
 
   <section>
     <div class="section-title">What you'll do</div>
     <ul class="plain">
-      <li>Call U.S. homeowners and book solar consultations — no closing, no pressure pitch</li>
+      <li>Make high-volume outbound calls — 200+ calls a day — booking solar consultations for U.S. homeowners</li>
       <li>Follow a proven script built to get past the first ten seconds</li>
-      <li>Work set hours, hit a daily call target, get paid on performance</li>
+      <li>Work Monday–Friday, weekends off — consistent schedule, no nights unless you want extra hours</li>
     </ul>
   </section>
 
   <section>
     <div class="section-title">What we're looking for</div>
     <ul class="plain">
-      <li>Fluent, clear spoken English</li>
-      <li>A quiet space, reliable internet, a headset</li>
-      <li>Someone who shows up — this is a real job, not a side gig</li>
+      <li>Native Spanish speaker with advanced (C1) English</li>
+      <li>1+ years of outbound phone sales, telemarketing, or call center experience</li>
+      <li>Comfortable and consistent at high call volume — 200+ dials a day</li>
+      <li>Reliable internet, a headset, and a quiet space to take calls</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="section-title">Pay & training</div>
+    <ul class="plain">
+      <li>Base salary plus uncapped bonus/commission — average total pay around $2,100 USD/month</li>
+      <li>Paid in USD regardless of where you're located</li>
+      <li>2 weeks of structured, paid onboarding before you're calling solo</li>
     </ul>
   </section>
 
@@ -300,29 +289,31 @@
    One page, six variants — driven by ?country= or browser locale.
 --------------------------------------------------------- */
 const CONFIG = {
-  MX: { lang:'es', currency:'MXN', rate:18.5, headline:'Agenda citas. Cobra por cada trato. Trabaja desde casa.',
-        sub:'Collective Solar busca agentes bilingües para llamar a propietarios en EE.UU. y agendar consultas de energía solar. Se requiere inglés. Remoto. Pago por desempeño.',
-        eyebrow:'Contratando ahora — remoto', payLabel:'Por trato cerrado' },
-  CO: { lang:'es', currency:'COP', rate:4100, headline:'Agenda citas. Cobra por cada trato. Trabaja desde casa.',
-        sub:'Collective Solar busca agentes bilingües para llamar a propietarios en EE.UU. y agendar consultas de energía solar. Se requiere inglés. Remoto. Pago por desempeño.',
-        eyebrow:'Contratando ahora — remoto', payLabel:'Por trato cerrado' },
-  BO: { lang:'es', currency:'BOB', rate:6.9, headline:'Agenda citas. Cobra por cada trato. Trabaja desde casa.',
-        sub:'Collective Solar busca agentes bilingües para llamar a propietarios en EE.UU. y agendar consultas de energía solar. Se requiere inglés. Remoto. Pago por desempeño.',
-        eyebrow:'Contratando ahora — remoto', payLabel:'Por trato cerrado' },
-  VE: { lang:'es', currency:'USD', rate:1, headline:'Agenda citas. Cobra por cada trato. Trabaja desde casa.',
-        sub:'Collective Solar busca agentes bilingües para llamar a propietarios en EE.UU. y agendar consultas de energía solar. Se requiere inglés. Remoto. Pago en dólares.',
-        eyebrow:'Contratando ahora — remoto', payLabel:'Por trato cerrado' },
-  EG: { lang:'en', currency:'EGP', rate:48, headline:'Book appointments. Get paid per deal. Work from home.',
-        sub:'Collective Solar is hiring bilingual appointment setters to call U.S. homeowners and book solar consultations. English required. Remote. Performance-based pay.',
-        eyebrow:'Now hiring — remote', payLabel:'Per funded deal' },
-  PH: { lang:'en', currency:'PHP', rate:56, headline:'Book appointments. Get paid per deal. Work from home.',
-        sub:'Collective Solar is hiring bilingual appointment setters to call U.S. homeowners and book solar consultations. English required. Remote. Performance-based pay.',
-        eyebrow:'Now hiring — remote', payLabel:'Per funded deal' },
-  DEFAULT: { lang:'en', currency:'USD', rate:1, headline:'Book appointments. Get paid per deal. Work from anywhere.',
-        sub:'Collective Solar is hiring bilingual appointment setters to call U.S. homeowners and book solar consultations. English required. Remote. Performance-based pay.',
-        eyebrow:'Now hiring — remote', payLabel:'Per funded deal' }
+  MX: { lang:'es', currency:'USD', rate:1, headline:'Agenda citas. Salario base más bonos sin tope. Trabaja desde casa.',
+        sub:'Collective Solar busca agentes bilingües para llamar a propietarios en EE.UU. y agendar consultas de energía solar. Inglés avanzado requerido. 100% remoto. Pago en dólares.',
+        eyebrow:'Contratando ahora — remoto', payLabel:'Prom. USD/mes*' },
+  CO: { lang:'es', currency:'USD', rate:1, headline:'Agenda citas. Salario base más bonos sin tope. Trabaja desde casa.',
+        sub:'Collective Solar busca agentes bilingües para llamar a propietarios en EE.UU. y agendar consultas de energía solar. Inglés avanzado requerido. 100% remoto. Pago en dólares.',
+        eyebrow:'Contratando ahora — remoto', payLabel:'Prom. USD/mes*' },
+  BO: { lang:'es', currency:'USD', rate:1, headline:'Agenda citas. Salario base más bonos sin tope. Trabaja desde casa.',
+        sub:'Collective Solar busca agentes bilingües para llamar a propietarios en EE.UU. y agendar consultas de energía solar. Inglés avanzado requerido. 100% remoto. Pago en dólares.',
+        eyebrow:'Contratando ahora — remoto', payLabel:'Prom. USD/mes*' },
+  VE: { lang:'es', currency:'USD', rate:1, headline:'Agenda citas. Salario base más bonos sin tope. Trabaja desde casa.',
+        sub:'Collective Solar busca agentes bilingües para llamar a propietarios en EE.UU. y agendar consultas de energía solar. Inglés avanzado requerido. 100% remoto. Pago en dólares.',
+        eyebrow:'Contratando ahora — remoto', payLabel:'Prom. USD/mes*' },
+  EG: { lang:'en', currency:'USD', rate:1, headline:'Book appointments. Base pay plus uncapped bonuses. Work from home.',
+        sub:'Collective Solar is hiring bilingual appointment setters to call U.S. homeowners and book solar consultations. Advanced English required. 100% remote. Paid in USD.',
+        eyebrow:'Now hiring — remote', payLabel:'Avg. USD/month*' },
+  PH: { lang:'en', currency:'USD', rate:1, headline:'Book appointments. Base pay plus uncapped bonuses. Work from home.',
+        sub:'Collective Solar is hiring bilingual appointment setters to call U.S. homeowners and book solar consultations. Advanced English required. 100% remote. Paid in USD.',
+        eyebrow:'Now hiring — remote', payLabel:'Avg. USD/month*' },
+  DEFAULT: { lang:'en', currency:'USD', rate:1, headline:'Book appointments. Base pay plus uncapped bonuses. Work from anywhere.',
+        sub:'Collective Solar is hiring bilingual appointment setters to call U.S. homeowners and book solar consultations. Advanced English required. 100% remote. Paid in USD.',
+        eyebrow:'Now hiring — remote', payLabel:'Avg. USD/month*' }
 };
-const BASE_PAY_USD = 3000;
+const BASE_PAY_USD = 2100;
+/* NOTE: all pay shown in USD per the FB post ("earn in USD") — not converted
+   to local currency, since that's part of the pitch (getting paid in dollars). */
 
 function getCountry(){
   const params = new URLSearchParams(window.location.search);
@@ -346,6 +337,7 @@ function applyLocalization(){
   document.getElementById('headline').textContent = cfg.headline;
   document.getElementById('subhead').textContent = cfg.sub;
   document.getElementById('fact-pay').textContent = formatCurrency(BASE_PAY_USD * cfg.rate, cfg.currency);
+  document.getElementById('fact-pay-label').textContent = cfg.payLabel;
   // Preselect country dropdown if we know it
   if (code !== 'DEFAULT') {
     const sel = document.getElementById('country');
