@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collective Solar — Careers</title>
+<style>
+  :root{
+    --charcoal:#1c1c1e;
+    --charcoal-deep:#0f0f10;
+    --white:#f7f7f5;
+    --off-white:#c9c9c6;
+    --line:#3a3a3c;
+    --accent:#e8e8e3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--charcoal-deep);
+    color:var(--white);
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:0 24px;}
+
+  /* Header */
+  header{
+    padding:32px 0 24px;
+    border-bottom:1px solid var(--line);
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    letter-spacing:0.14em;
+    font-size:13px;
+    text-transform:uppercase;
+    font-weight:600;
+    color:var(--white);
+  }
+  .globe{
+    width:16px;height:16px;
+    border:1.4px solid var(--white);
+    border-radius:50%;
+    position:relative;
+    flex-shrink:0;
+  }
+  .globe::before{
+    content:"";
+    position:absolute;top:0;left:50%;
+    width:1.4px;height:100%;
+    background:var(--white);
+    transform:translateX(-50%);
+  }
+  .globe::after{
+    content:"";
+    position:absolute;top:50%;left:0;
+    width:100%;height:1.4px;
+    background:var(--white);
+    transform:translateY(-50%);
+  }
+
+  /* Hero */
+  .hero{padding:64px 0 40px;}
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--off-white);
+    margin-bottom:18px;
+  }
+  h1{
+    font-size:38px;
+    line-height:1.12;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    margin-bottom:20px;
+  }
+  .sub{
+    font-size:16px;
+    line-height:1.6;
+    color:var(--off-white);
+    max-width:480px;
+    margin-bottom:32px;
+  }
+  .quote{
+    font-size:15px;
+    font-style:italic;
+    color:var(--accent);
+    border-left:2px solid var(--white);
+    padding-left:16px;
+    margin-bottom:36px;
+    max-width:440px;
+  }
+
+  /* Facts strip */
+  .facts{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    margin-bottom:48px;
+  }
+  .fact{
+    padding:20px 0;
+    text-align:left;
+  }
+  .fact:not(:last-child){border-right:1px solid var(--line);padding-right:16px;}
+  .fact:not(:first-child){padding-left:16px;}
+  .fact .num{font-size:22px;font-weight:700;margin-bottom:4px;}
+  .fact .lbl{font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--off-white);}
+
+  /* Section titles */
+  .section-title{
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--off-white);
+    margin-bottom:20px;
+  }
+
+  section{padding:40px 0;border-top:1px solid var(--line);}
+
+  ul.plain{list-style:none;}
+  ul.plain li{
+    position:relative;
+    padding-left:20px;
+    margin-bottom:14px;
+    font-size:15px;
+    line-height:1.55;
+    color:var(--accent);
+  }
+  ul.plain li::before{
+    content:"—";
+    position:absolute;left:0;color:var(--off-white);
+  }
+
+  /* Form */
+  form{margin-top:8px;}
+  .field{margin-bottom:18px;}
+  label{
+    display:block;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--off-white);
+    margin-bottom:8px;
+  }
+  input,select{
+    width:100%;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--white);
+    padding:14px 14px;
+    font-size:15px;
+    border-radius:2px;
+    font-family:inherit;
+  }
+  input:focus,select:focus{
+    outline:none;
+    border-color:var(--white);
+  }
+  select{appearance:none;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .checkline{
+    display:flex;align-items:flex-start;gap:10px;
+    font-size:13px;color:var(--off-white);
+    margin-bottom:24px;
+  }
+  .checkline input{width:auto;margin-top:3px;}
+
+  button.submit{
+    width:100%;
+    background:var(--white);
+    color:var(--charcoal-deep);
+    border:none;
+    padding:16px;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border-radius:2px;
+    cursor:pointer;
+  }
+  button.submit:hover{background:var(--off-white);}
+  button.submit:disabled{opacity:0.5;cursor:default;}
+
+  .status{
+    margin-top:14px;
+    font-size:13px;
+    color:var(--off-white);
+    display:none;
+  }
+  .status.show{display:block;}
+
+  footer{
+    padding:32px 0 60px;
+    font-size:12px;
+    color:var(--line);
+    text-align:center;
+  }
+
+  @media(max-width:480px){
+    h1{font-size:30px;}
+    .facts{grid-template-columns:1fr;}
+    .fact:not(:last-child){border-right:none;border-bottom:1px solid var(--line);padding-right:0;padding-bottom:16px;}
+    .fact:not(:first-child){padding-left:0;padding-top:16px;}
+    .row2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="globe"></span> Collective</div>
+  </header>
+
+  <div class="hero">
+    <div class="eyebrow" id="eyebrow">Now hiring — remote</div>
+    <h1 id="headline">Book appointments. Get paid per deal. Work from anywhere.</h1>
+    <p class="sub" id="subhead">Collective Solar is hiring bilingual appointment setters to call U.S. homeowners and book solar consultations. English required. Remote. Performance-based pay.</p>
+    <div class="quote">"Work before work. I don't expect effort from anyone I'm not willing to give first." — Collective Solar</div>
+  </div>
+
+  <div class="facts">
+    <div class="fact"><div class="num" id="fact-pay">$3,000</div><div class="lbl">Per funded deal</div></div>
+    <div class="fact"><div class="num">Remote</div><div class="lbl">Work from home</div></div>
+    <div class="fact"><div class="num">English</div><div class="lbl">Required</div></div>
+  </div>
+
+  <section>
+    <div class="section-title">What you'll do</div>
+    <ul class="plain">
+      <li>Call U.S. homeowners and book solar consultations — no closing, no pressure pitch</li>
+      <li>Follow a proven script built to get past the first ten seconds</li>
+      <li>Work set hours, hit a daily call target, get paid on performance</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="section-title">What we're looking for</div>
+    <ul class="plain">
+      <li>Fluent, clear spoken English</li>
+      <li>A quiet space, reliable internet, a headset</li>
+      <li>Someone who shows up — this is a real job, not a side gig</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="section-title">Apply</div>
+    <form id="applyForm">
+      <div class="row2">
+        <div class="field">
+          <label for="firstName">First name</label>
+          <input type="text" id="firstName" required>
+        </div>
+        <div class="field">
+          <label for="lastName">Last name</label>
+          <input type="text" id="lastName" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="whatsapp">WhatsApp number</label>
+          <input type="tel" id="whatsapp" required>
+        </div>
+        <div class="field">
+          <label for="country">Country</label>
+          <select id="country" required>
+            <option value="">Select</option>
+            <option value="CO">Colombia</option>
+            <option value="MX">Mexico</option>
+            <option value="BO">Bolivia</option>
+            <option value="VE">Venezuela</option>
+            <option value="EG">Egypt</option>
+            <option value="PH">Philippines</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="checkline">
+        <input type="checkbox" id="englishConfirm" required>
+        <label for="englishConfirm" style="margin:0;text-transform:none;letter-spacing:0;font-size:13px;">I speak fluent, clear English and am comfortable on English-language calls.</label>
+      </div>
+      <button type="submit" class="submit" id="submitBtn">Submit application</button>
+      <div class="status" id="statusMsg"></div>
+    </form>
+  </section>
+
+  <footer>Collective Solar &nbsp;·&nbsp; careers.collectivesolar.io</footer>
+</div>
+
+<script>
+/* ---------------------------------------------------------
+   COUNTRY / LANGUAGE / CURRENCY CONFIG
+   One page, six variants — driven by ?country= or browser locale.
+--------------------------------------------------------- */
+const CONFIG = {
+  MX: { lang:'es', currency:'MXN', rate:18.5, headline:'Agenda citas. Cobra por cada trato. Trabaja desde casa.',
+        sub:'Collective Solar busca agentes bilingües para llamar a propietarios en EE.UU. y agendar consultas de energía solar. Se requiere inglés. Remoto. Pago por desempeño.',
+        eyebrow:'Contratando ahora — remoto', payLabel:'Por trato cerrado' },
+  CO: { lang:'es', currency:'COP', rate:4100, headline:'Agenda citas. Cobra por cada trato. Trabaja desde casa.',
+        sub:'Collective Solar busca agentes bilingües para llamar a propietarios en EE.UU. y agendar consultas de energía solar. Se requiere inglés. Remoto. Pago por desempeño.',
+        eyebrow:'Contratando ahora — remoto', payLabel:'Por trato cerrado' },
+  BO: { lang:'es', currency:'BOB', rate:6.9, headline:'Agenda citas. Cobra por cada trato. Trabaja desde casa.',
+        sub:'Collective Solar busca agentes bilingües para llamar a propietarios en EE.UU. y agendar consultas de energía solar. Se requiere inglés. Remoto. Pago por desempeño.',
+        eyebrow:'Contratando ahora — remoto', payLabel:'Por trato cerrado' },
+  VE: { lang:'es', currency:'USD', rate:1, headline:'Agenda citas. Cobra por cada trato. Trabaja desde casa.',
+        sub:'Collective Solar busca agentes bilingües para llamar a propietarios en EE.UU. y agendar consultas de energía solar. Se requiere inglés. Remoto. Pago en dólares.',
+        eyebrow:'Contratando ahora — remoto', payLabel:'Por trato cerrado' },
+  EG: { lang:'en', currency:'EGP', rate:48, headline:'Book appointments. Get paid per deal. Work from home.',
+        sub:'Collective Solar is hiring bilingual appointment setters to call U.S. homeowners and book solar consultations. English required. Remote. Performance-based pay.',
+        eyebrow:'Now hiring — remote', payLabel:'Per funded deal' },
+  PH: { lang:'en', currency:'PHP', rate:56, headline:'Book appointments. Get paid per deal. Work from home.',
+        sub:'Collective Solar is hiring bilingual appointment setters to call U.S. homeowners and book solar consultations. English required. Remote. Performance-based pay.',
+        eyebrow:'Now hiring — remote', payLabel:'Per funded deal' },
+  DEFAULT: { lang:'en', currency:'USD', rate:1, headline:'Book appointments. Get paid per deal. Work from anywhere.',
+        sub:'Collective Solar is hiring bilingual appointment setters to call U.S. homeowners and book solar consultations. English required. Remote. Performance-based pay.',
+        eyebrow:'Now hiring — remote', payLabel:'Per funded deal' }
+};
+const BASE_PAY_USD = 3000;
+
+function getCountry(){
+  const params = new URLSearchParams(window.location.search);
+  const fromParam = params.get('country');
+  if (fromParam && CONFIG[fromParam.toUpperCase()]) return fromParam.toUpperCase();
+  return 'DEFAULT';
+}
+
+function formatCurrency(amount, currency){
+  try{
+    return new Intl.NumberFormat(undefined, {style:'currency', currency, maximumFractionDigits:0}).format(amount);
+  }catch(e){
+    return currency + ' ' + Math.round(amount).toLocaleString();
+  }
+}
+
+function applyLocalization(){
+  const code = getCountry();
+  const cfg = CONFIG[code];
+  document.getElementById('eyebrow').textContent = cfg.eyebrow;
+  document.getElementById('headline').textContent = cfg.headline;
+  document.getElementById('subhead').textContent = cfg.sub;
+  document.getElementById('fact-pay').textContent = formatCurrency(BASE_PAY_USD * cfg.rate, cfg.currency);
+  // Preselect country dropdown if we know it
+  if (code !== 'DEFAULT') {
+    const sel = document.getElementById('country');
+    if (sel) sel.value = code;
+  }
+}
+applyLocalization();
+
+/* ---------------------------------------------------------
+   FORM SUBMIT — sends applicant data toward Odoo
+   NOTE FOR CLAUDE CODE / DEV: replace ODOO_ENDPOINT with the
+   real Odoo webhook/API URL + auth once available. Until then
+   this logs to console and shows a friendly confirmation.
+--------------------------------------------------------- */
+const ODOO_ENDPOINT = "REPLACE_WITH_ODOO_WEBHOOK_URL";
+
+document.getElementById('applyForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const status = document.getElementById('statusMsg');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const params = new URLSearchParams(window.location.search);
+  const payload = {
+    first_name: document.getElementById('firstName').value,
+    last_name: document.getElementById('lastName').value,
+    email: document.getElementById('email').value,
+    whatsapp: document.getElementById('whatsapp').value,
+    country: document.getElementById('country').value,
+    english_confirmed: document.getElementById('englishConfirm').checked,
+    source_page_country: getCountry(),
+    utm_source: params.get('utm_source') || '',
+    utm_medium: params.get('utm_medium') || '',
+    utm_campaign: params.get('utm_campaign') || '',
+    submitted_at: new Date().toISOString()
+  };
+
+  try{
+    if (ODOO_ENDPOINT && ODOO_ENDPOINT !== "REPLACE_WITH_ODOO_WEBHOOK_URL") {
+      await fetch(ODOO_ENDPOINT, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+    } else {
+      console.log('[Careers page — Odoo not yet connected] Application payload:', payload);
+    }
+    status.textContent = "Thanks — we've got your application. We'll text or email you within 48 hours.";
+    status.classList.add('show');
+    document.getElementById('applyForm').reset();
+    applyLocalization();
+    btn.textContent = 'Submitted';
+  }catch(err){
+    status.textContent = "Something went wrong sending your application. Please try again.";
+    status.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Submit application';
+    console.error(err);
+  }
+});
+</script>
+
+</body>
+</html>
