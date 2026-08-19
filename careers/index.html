@@ -347,12 +347,11 @@ function applyLocalization(){
 applyLocalization();
 
 /* ---------------------------------------------------------
-   FORM SUBMIT — sends applicant data toward Odoo
-   NOTE FOR CLAUDE CODE / DEV: replace ODOO_ENDPOINT with the
-   real Odoo webhook/API URL + auth once available. Until then
-   this logs to console and shows a friendly confirmation.
+   FORM SUBMIT — sends applicant data to our own hidden
+   "/api/apply" function, which safely talks to Odoo using
+   a key that never appears in this file or in GitHub.
 --------------------------------------------------------- */
-const ODOO_ENDPOINT = "REPLACE_WITH_ODOO_WEBHOOK_URL";
+const APPLY_ENDPOINT = "/api/apply";
 
 document.getElementById('applyForm').addEventListener('submit', async function(e){
   e.preventDefault();
@@ -377,14 +376,14 @@ document.getElementById('applyForm').addEventListener('submit', async function(e
   };
 
   try{
-    if (ODOO_ENDPOINT && ODOO_ENDPOINT !== "REPLACE_WITH_ODOO_WEBHOOK_URL") {
-      await fetch(ODOO_ENDPOINT, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
-      });
-    } else {
-      console.log('[Careers page — Odoo not yet connected] Application payload:', payload);
+    const resp = await fetch(APPLY_ENDPOINT, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const result = await resp.json();
+    if (!resp.ok || result.error) {
+      throw new Error(result.error || 'Submission failed');
     }
     status.textContent = "Thanks — we've got your application. We'll text or email you within 48 hours.";
     status.classList.add('show');
