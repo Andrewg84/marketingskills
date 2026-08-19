@@ -82,8 +82,7 @@ export default async function handler(req, res) {
               partner_name: `${first_name} ${last_name}`,
               email_from: email,
               partner_phone: whatsapp,
-              job_id: ODOO_JOB_ID,
-              description: description
+              job_id: ODOO_JOB_ID
             }]
           ]
         }
@@ -97,7 +96,40 @@ export default async function handler(req, res) {
       return;
     }
 
-    res.status(200).json({ ok: true, applicant_id: createData.result });
+    const applicantId = createData.result;
+
+    // Step 3: post the applicant's details as a note in the record's
+    // chatter via message_post (the "description" field isn't writable on
+    // hr.applicant create). Best-effort: wrapped in its own try/catch so a
+    // failed note never fails the application submission itself.
+    try {
+      const noteRes = await fetch(`${ODOO_URL}/jsonrpc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'call',
+          params: {
+            service: 'object',
+            method: 'execute_kw',
+            args: [
+              ODOO_DB, uid, ODOO_API_KEY,
+              'hr.applicant', 'message_post',
+              [[applicantId]],
+              { body: description.replace(/\n/g, '<br>') }
+            ]
+          }
+        })
+      });
+      const noteData = await noteRes.json();
+      if (noteData.error) {
+        console.error('Odoo message_post failed (application still saved)', noteData.error);
+      }
+    } catch (noteErr) {
+      console.error('Odoo message_post error (application still saved)', noteErr);
+    }
+
+    res.status(200).json({ ok: true, applicant_id: applicantId });
   } catch (err) {
     console.error('Odoo integration error', err);
     res.status(500).json({ error: 'Unexpected server error' });
