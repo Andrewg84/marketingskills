@@ -31,100 +31,107 @@ export default async function handler(req, res) {
     return;
   }
 
-  try {
-    // Step 1: log in to Odoo and get a user ID (uid)
-    const authRes = await fetch(`${ODOO_URL}/jsonrpc`, {
+  // One JSON-RPC round-trip to Odoo. Returns the `result`, or throws on an
+  // Odoo error so callers can try/catch. Keeps the envelope in one place.
+  async function odooCall(service, method, args) {
+    const resp = await fetch(`${ODOO_URL}/jsonrpc`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         jsonrpc: '2.0',
         method: 'call',
-        params: {
-          service: 'common',
-          method: 'authenticate',
-          args: [ODOO_DB, ODOO_LOGIN, ODOO_API_KEY, {}]
-        }
+        params: { service, method, args }
       })
     });
-    const authData = await authRes.json();
-    const uid = authData.result;
+    const data = await resp.json();
+    if (data.error) {
+      const e = new Error(data.error.message || 'Odoo RPC error');
+      e.odoo = data.error;
+      throw e;
+    }
+    return data.result;
+  }
 
+  try {
+    // Step 1: log in to Odoo and get a user ID (uid)
+    const uid = await odooCall('common', 'authenticate', [ODOO_DB, ODOO_LOGIN, ODOO_API_KEY, {}]);
     if (!uid) {
-      console.error('Odoo auth failed', authData);
+      console.error('Odoo auth failed (no uid returned)');
       res.status(502).json({ error: 'Could not authenticate with Odoo' });
       return;
     }
 
-    // Step 2: create the applicant record in the Recruitment app
-    const description = [
-      `Country: ${country || 'n/a'}`,
-      `English confirmed by applicant: ${english_confirmed ? 'yes' : 'no'}`,
-      `Landing page version shown: ${source_page_country || 'default'}`,
-      `UTM source: ${utm_source || 'n/a'}`,
-      `UTM medium: ${utm_medium || 'n/a'}`,
-      `UTM campaign: ${utm_campaign || 'n/a'}`,
-      `Submitted at: ${submitted_at || 'n/a'}`
-    ].join('\n');
+    // Find a utm.source/medium/campaign record by name, creating it if it
+    // doesn't exist yet, and return its id.
+    async function getOrCreateUtm(model, name) {
+      const existing = await odooCall('object', 'execute_kw', [
+        ODOO_DB, uid, ODOO_API_KEY,
+        model, 'search',
+        [[['name', '=', name]]],
+        { limit: 1 }
+      ]);
+      if (Array.isArray(existing) && existing.length) return existing[0];
+      return await odooCall('object', 'execute_kw', [
+        ODOO_DB, uid, ODOO_API_KEY,
+        model, 'create',
+        [{ name }]
+      ]);
+    }
 
-    const createRes = await fetch(`${ODOO_URL}/jsonrpc`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jsonrpc: '2.0',
-        method: 'call',
-        params: {
-          service: 'object',
-          method: 'execute_kw',
-          args: [
-            ODOO_DB, uid, ODOO_API_KEY,
-            'hr.applicant', 'create',
-            [{
-              partner_name: `${first_name} ${last_name}`,
-              email_from: email,
-              partner_phone: whatsapp,
-              job_id: ODOO_JOB_ID
-            }]
-          ]
-        }
-      })
-    });
-    const createData = await createRes.json();
+    // Step 2: resolve the UTM values to real utm.* record ids so they land in
+    // the applicant's proper Source / Medium / Campaign fields. Best-effort:
+    // if this fails we log it and still create the applicant, just without
+    // the links — a UTM hiccup should never lose an application.
+    const utmFields = {};
+    try {
+      const sourceName = utm_source || 'careers_page';
+      const mediumName = utm_medium || 'website';
+      const campaignName = utm_campaign || source_page_country || 'default';
+      utmFields.source_id = await getOrCreateUtm('utm.source', sourceName);
+      utmFields.medium_id = await getOrCreateUtm('utm.medium', mediumName);
+      utmFields.campaign_id = await getOrCreateUtm('utm.campaign', campaignName);
+    } catch (utmErr) {
+      console.error('UTM lookup/create failed (creating applicant without UTM links)', utmErr);
+    }
 
-    if (createData.error) {
-      console.error('Odoo create failed', createData.error);
+    // Step 3: create the applicant record in the Recruitment app
+    let applicantId;
+    try {
+      applicantId = await odooCall('object', 'execute_kw', [
+        ODOO_DB, uid, ODOO_API_KEY,
+        'hr.applicant', 'create',
+        [{
+          partner_name: `${first_name} ${last_name}`,
+          email_from: email,
+          partner_phone: whatsapp,
+          job_id: ODOO_JOB_ID,
+          ...utmFields
+        }]
+      ]);
+    } catch (createErr) {
+      console.error('Odoo create failed', createErr);
       res.status(502).json({ error: 'Could not save application to Odoo' });
       return;
     }
 
-    const applicantId = createData.result;
+    // Step 4: post the remaining applicant details as a note in the record's
+    // chatter via message_post. UTM values are now proper linked fields, so
+    // they're no longer repeated in this note. Best-effort — a failed note
+    // never fails the application submission itself.
+    const description = [
+      `Country: ${country || 'n/a'}`,
+      `English confirmed by applicant: ${english_confirmed ? 'yes' : 'no'}`,
+      `Landing page version shown: ${source_page_country || 'default'}`,
+      `Submitted at: ${submitted_at || 'n/a'}`
+    ].join('\n');
 
-    // Step 3: post the applicant's details as a note in the record's
-    // chatter via message_post (the "description" field isn't writable on
-    // hr.applicant create). Best-effort: wrapped in its own try/catch so a
-    // failed note never fails the application submission itself.
     try {
-      const noteRes = await fetch(`${ODOO_URL}/jsonrpc`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          method: 'call',
-          params: {
-            service: 'object',
-            method: 'execute_kw',
-            args: [
-              ODOO_DB, uid, ODOO_API_KEY,
-              'hr.applicant', 'message_post',
-              [[applicantId]],
-              { body: description.replace(/\n/g, '<br>') }
-            ]
-          }
-        })
-      });
-      const noteData = await noteRes.json();
-      if (noteData.error) {
-        console.error('Odoo message_post failed (application still saved)', noteData.error);
-      }
+      await odooCall('object', 'execute_kw', [
+        ODOO_DB, uid, ODOO_API_KEY,
+        'hr.applicant', 'message_post',
+        [[applicantId]],
+        { body: description.replace(/\n/g, '<br>') }
+      ]);
     } catch (noteErr) {
       console.error('Odoo message_post error (application still saved)', noteErr);
     }
