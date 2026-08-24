@@ -67,7 +67,7 @@ export default async function handler(req, res) {
       const existing = await odooCall('object', 'execute_kw', [
         ODOO_DB, uid, ODOO_API_KEY,
         model, 'search',
-        [[['name', '=', name]]],
+        [[['name', '=ilike', name]]],
         { limit: 1 }
       ]);
       if (Array.isArray(existing) && existing.length) return existing[0];
