@@ -225,6 +225,21 @@
     border-color:var(--signal);
   }
   select{appearance:none;}
+  input[type="file"]{
+    padding:11px 14px;
+    cursor:pointer;
+  }
+  input[type="file"]::file-selector-button{
+    background:var(--line);
+    color:var(--white);
+    border:none;
+    border-radius:4px;
+    padding:6px 12px;
+    font-size:12px;
+    font-family:inherit;
+    margin-right:12px;
+    cursor:pointer;
+  }
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .checkline{
     display:flex;align-items:flex-start;gap:10px;
@@ -281,8 +296,8 @@
     <div class="brand">
       <svg class="brand-globe" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
         <circle class="ring" cx="14" cy="14" r="10.5"/>
-        <path class="continent" d="M10.8 8.2c1 0 1.9.6 1.9 1.5 0 .5.4.7.9.8.9.2 1.1 1 .5 1.6-.5.5-.3 1 .2 1.3.8.5.7 1.5-.1 2-1.2.8-1 1.9-1.5 2.9-.4.8-1 1.3-1.9 1.1-1-.2-1.4-1-1.2-2 .2-1-.2-1.6-.7-2.4-.5-.8-.4-1.6.1-2.3.6-.8.4-1.5-.4-1.9-.7-.4-.7-1.1.2-1.4.4-.2.6-.7 1-1.2z"/>
-        <path class="ring" d="M20.5 5.2c1.6 1.9 2.5 4.4 2.5 8.8s-.9 6.9-2.5 8.8"/>
+        <path class="continent" d="M11.19,5.35 L11.19,5.81 L11.07,6.27 L10.73,6.73 L9.58,7.19 L9.01,7.65 L8.66,8.12 L8.32,8.58 L7.98,9.04 L6.83,9.5 L6.02,9.96 L6.14,10.42 L6.48,10.88 L6.83,11.35 L7.17,11.81 L7.63,12.27 L7.86,12.73 L7.98,13.19 L8.09,13.65 L8.09,14.12 L8.32,14.58 L8.66,15.04 L9.47,15.5 L9.93,15.96 L10.04,16.42 L10.16,16.88 L10.27,17.35 L10.39,17.81 L10.61,18.27 L10.84,18.73 L11.07,19.19 L11.07,19.65 L11.07,20.12 L11.07,20.58 L11.07,21.04 L11.07,21.5 L11.19,21.96 L11.53,22.42 L13.37,22.42 L13.6,21.96 L13.83,21.5 L13.94,21.04 L14.17,20.58 L14.63,20.12 L14.86,19.65 L14.98,19.19 L14.98,18.73 L15.09,18.27 L15.2,17.81 L15.55,17.35 L16.01,16.88 L16.35,16.42 L16.58,15.96 L16.81,15.5 L16.93,15.04 L17.04,14.58 L17.04,14.12 L16.81,13.65 L16.24,13.19 L14.86,12.73 L14.06,12.27 L13.6,11.81 L12.91,11.35 L10.16,10.88 L7.52,10.42 L8.55,9.96 L8.89,9.5 L9.12,9.04 L9.47,8.58 L10.04,8.12 L11.07,7.65 L11.53,7.19 L11.88,6.73 L12.11,6.27 L12.22,5.81 L12.22,5.35 Z"/>
+        <path class="ring" d="M16.87,5.35 L16.93,5.81 L16.93,6.27 L16.75,6.73 L16.64,7.19 L16.64,7.65 L16.98,8.12 L17.55,8.58 L18.13,9.04 L18.64,9.5 L18.88,9.96 L18.99,10.42 L19.11,10.88 L19.11,11.35 L19.22,11.81 L19.28,12.27 L19.51,12.73 L20.66,13.19 L21,13.65 L21.91,14.12 L21.98,14.58 L21.91,15.04 L21.91,15.5 L21.91,15.96 L21.8,16.42 L21.74,16.88 L21.63,17.35 L21.58,17.81 L21.46,18.27 L21.4,18.73 L21.23,19.19 L21.05,19.65"/>
       </svg>
       <div class="brand-text"><span class="b1">COLLECTIVE</span><span class="b2">SOLAR</span></div>
     </div>
@@ -371,6 +386,11 @@
         <input type="checkbox" id="englishConfirm" required>
         <label for="englishConfirm" style="margin:0;text-transform:none;letter-spacing:0;font-size:13px;">I speak fluent, clear English and am comfortable on English-language calls.</label>
       </div>
+      <div class="field">
+        <label for="resume">Resume (PDF, Word, or image — optional, max 8MB)</label>
+        <input type="file" id="resume" accept=".pdf,.doc,.docx,image/*">
+        <div class="status" id="resumeMsg" style="margin-top:8px;"></div>
+      </div>
       <button type="submit" class="submit" id="submitBtn">Submit application</button>
       <div class="status" id="statusMsg"></div>
     </form>
@@ -453,6 +473,18 @@ document.getElementById('applyForm').addEventListener('submit', async function(e
   e.preventDefault();
   const btn = document.getElementById('submitBtn');
   const status = document.getElementById('statusMsg');
+  const resumeMsg = document.getElementById('resumeMsg');
+  resumeMsg.classList.remove('show');
+
+  const resumeInput = document.getElementById('resume');
+  const resumeFile = resumeInput.files[0];
+  const MAX_RESUME_BYTES = 8 * 1024 * 1024; // 8MB
+  if (resumeFile && resumeFile.size > MAX_RESUME_BYTES) {
+    resumeMsg.textContent = "That file's too large — please upload something under 8MB.";
+    resumeMsg.classList.add('show');
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = 'Submitting...';
 
@@ -472,6 +504,18 @@ document.getElementById('applyForm').addEventListener('submit', async function(e
   };
 
   try{
+    // If a resume was attached, read it as base64 before sending
+    if (resumeFile) {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]); // strip "data:...;base64," prefix
+        reader.onerror = reject;
+        reader.readAsDataURL(resumeFile);
+      });
+      payload.resume_filename = resumeFile.name;
+      payload.resume_base64 = base64;
+    }
+
     const resp = await fetch(APPLY_ENDPOINT, {
       method:'POST',
       headers:{'Content-Type':'application/json'},

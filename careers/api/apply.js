@@ -23,7 +23,8 @@ export default async function handler(req, res) {
   const {
     first_name, last_name, email, whatsapp, country,
     english_confirmed, source_page_country,
-    utm_source, utm_medium, utm_campaign, submitted_at
+    utm_source, utm_medium, utm_campaign, submitted_at,
+    resume_filename, resume_base64
   } = req.body || {};
 
   if (!first_name || !last_name || !email || !whatsapp) {
@@ -31,93 +32,103 @@ export default async function handler(req, res) {
     return;
   }
 
-  // One JSON-RPC round-trip to Odoo. Returns the `result`, or throws on an
-  // Odoo error so callers can try/catch. Keeps the envelope in one place.
-  async function odooCall(service, method, args) {
-    const resp = await fetch(`${ODOO_URL}/jsonrpc`, {
+  try {
+    // Step 1: log in to Odoo and get a user ID (uid)
+    const authRes = await fetch(`${ODOO_URL}/jsonrpc`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         jsonrpc: '2.0',
         method: 'call',
-        params: { service, method, args }
+        params: {
+          service: 'common',
+          method: 'authenticate',
+          args: [ODOO_DB, ODOO_LOGIN, ODOO_API_KEY, {}]
+        }
       })
     });
-    const data = await resp.json();
-    if (data.error) {
-      const e = new Error(data.error.message || 'Odoo RPC error');
-      e.odoo = data.error;
-      throw e;
-    }
-    return data.result;
-  }
+    const authData = await authRes.json();
+    const uid = authData.result;
 
-  try {
-    // Step 1: log in to Odoo and get a user ID (uid)
-    const uid = await odooCall('common', 'authenticate', [ODOO_DB, ODOO_LOGIN, ODOO_API_KEY, {}]);
     if (!uid) {
-      console.error('Odoo auth failed (no uid returned)');
+      console.error('Odoo auth failed', authData);
       res.status(502).json({ error: 'Could not authenticate with Odoo' });
       return;
     }
 
-    // Find a utm.source/medium/campaign record by name, creating it if it
-    // doesn't exist yet, and return its id.
+    // Small helper to call Odoo's execute_kw for anything below
+    async function odooCall(model, method, args, kwargs) {
+      const r = await fetch(`${ODOO_URL}/jsonrpc`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'call',
+          params: {
+            service: 'object',
+            method: 'execute_kw',
+            args: [ODOO_DB, uid, ODOO_API_KEY, model, method, args, kwargs || {}]
+          }
+        })
+      });
+      const d = await r.json();
+      if (d.error) throw new Error(JSON.stringify(d.error));
+      return d.result;
+    }
+
+    // Find an existing utm.source / utm.medium / utm.campaign record by
+    // name, or create one if it doesn't exist yet. This is what makes the
+    // channel (Facebook, Indeed, etc.) show up in Odoo's real filters and
+    // pivot reports — not just as a note someone has to read manually.
+    // Matching is case-insensitive so "facebook" and "Facebook" are
+    // treated as the same tag instead of splitting into two.
     async function getOrCreateUtm(model, name) {
-      const existing = await odooCall('object', 'execute_kw', [
-        ODOO_DB, uid, ODOO_API_KEY,
-        model, 'search',
-        [[['name', '=ilike', name]]],
-        { limit: 1 }
-      ]);
-      if (Array.isArray(existing) && existing.length) return existing[0];
-      return await odooCall('object', 'execute_kw', [
-        ODOO_DB, uid, ODOO_API_KEY,
-        model, 'create',
-        [{ name }]
-      ]);
+      if (!name) return false;
+      const found = await odooCall(model, 'search', [[['name', '=ilike', name]]], { limit: 1 });
+      if (found && found.length) return found[0];
+      return await odooCall(model, 'create', [{ name }]);
     }
 
-    // Step 2: resolve the UTM values to real utm.* record ids so they land in
-    // the applicant's proper Source / Medium / Campaign fields. Best-effort:
-    // if this fails we log it and still create the applicant, just without
-    // the links — a UTM hiccup should never lose an application.
-    const utmFields = {};
-    try {
-      const sourceName = utm_source || 'careers_page';
-      const mediumName = utm_medium || 'website';
-      const campaignName = utm_campaign || source_page_country || 'default';
-      utmFields.source_id = await getOrCreateUtm('utm.source', sourceName);
-      utmFields.medium_id = await getOrCreateUtm('utm.medium', mediumName);
-      utmFields.campaign_id = await getOrCreateUtm('utm.campaign', campaignName);
-    } catch (utmErr) {
-      console.error('UTM lookup/create failed (creating applicant without UTM links)', utmErr);
+    const [sourceId, mediumId, campaignId] = await Promise.all([
+      getOrCreateUtm('utm.source', utm_source || 'careers_page'),
+      getOrCreateUtm('utm.medium', utm_medium || 'website'),
+      getOrCreateUtm('utm.campaign', utm_campaign || source_page_country || 'general')
+    ]);
+
+    // Step 2: create the applicant record in the Recruitment app, with
+    // source/medium/campaign set as real linked fields (not just text)
+    const applicantVals = {
+      partner_name: `${first_name} ${last_name}`,
+      email_from: email,
+      partner_phone: whatsapp,
+      job_id: ODOO_JOB_ID
+    };
+    if (sourceId) applicantVals.source_id = sourceId;
+    if (mediumId) applicantVals.medium_id = mediumId;
+    if (campaignId) applicantVals.campaign_id = campaignId;
+
+    const applicantId = await odooCall('hr.applicant', 'create', [applicantVals]);
+
+    // If a resume was uploaded, attach it directly to the applicant record
+    // so it shows up in the file/attachment area on their profile in Odoo.
+    if (resume_filename && resume_base64) {
+      try {
+        await odooCall('ir.attachment', 'create', [{
+          name: resume_filename,
+          datas: resume_base64,
+          res_model: 'hr.applicant',
+          res_id: applicantId
+        }]);
+      } catch (attachErr) {
+        // Non-fatal — the applicant is already saved even if the resume
+        // attachment fails for some reason.
+        console.error('Could not attach resume (non-fatal)', attachErr);
+      }
     }
 
-    // Step 3: create the applicant record in the Recruitment app
-    let applicantId;
-    try {
-      applicantId = await odooCall('object', 'execute_kw', [
-        ODOO_DB, uid, ODOO_API_KEY,
-        'hr.applicant', 'create',
-        [{
-          partner_name: `${first_name} ${last_name}`,
-          email_from: email,
-          partner_phone: whatsapp,
-          job_id: ODOO_JOB_ID,
-          ...utmFields
-        }]
-      ]);
-    } catch (createErr) {
-      console.error('Odoo create failed', createErr);
-      res.status(502).json({ error: 'Could not save application to Odoo' });
-      return;
-    }
-
-    // Step 4: post the remaining applicant details as a note in the record's
-    // chatter via message_post. UTM values are now proper linked fields, so
-    // they're no longer repeated in this note. Best-effort — a failed note
-    // never fails the application submission itself.
+    // Add the human-readable extras (country, English confirmation, which
+    // landing page variant was shown) as a note — these don't have native
+    // Odoo fields, so a chatter note is the right place for them.
     const description = [
       `Country: ${country || 'n/a'}`,
       `English confirmed by applicant: ${english_confirmed ? 'yes' : 'no'}`,
@@ -126,14 +137,11 @@ export default async function handler(req, res) {
     ].join('\n');
 
     try {
-      await odooCall('object', 'execute_kw', [
-        ODOO_DB, uid, ODOO_API_KEY,
-        'hr.applicant', 'message_post',
-        [[applicantId]],
-        { body: description.replace(/\n/g, '<br>') }
-      ]);
+      await odooCall('hr.applicant', 'message_post', [[applicantId]], { body: description });
     } catch (noteErr) {
-      console.error('Odoo message_post error (application still saved)', noteErr);
+      // Non-fatal — the applicant record (with its source/medium/campaign
+      // tracking already set) was still created successfully.
+      console.error('Could not post note (non-fatal)', noteErr);
     }
 
     res.status(200).json({ ok: true, applicant_id: applicantId });
