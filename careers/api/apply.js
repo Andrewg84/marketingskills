@@ -141,7 +141,7 @@ export default async function handler(req, res) {
     ].join('\n');
 
     try {
-      await odooCall('hr.applicant', 'message_post', [[applicantId]], { body: description });
+      await odooCall('hr.applicant', 'message_post', [[applicantId]], { body: description.replace(/\n/g, '<br>') });
     } catch (noteErr) {
       // Non-fatal — the applicant record (with its source/medium/campaign
       // tracking already set) was still created successfully.
