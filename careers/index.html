@@ -390,8 +390,8 @@
         <label for="englishConfirm" style="margin:0;text-transform:none;letter-spacing:0;font-size:13px;">I speak fluent, clear English and am comfortable on English-language calls.</label>
       </div>
       <div class="field">
-        <label for="resume">Resume (PDF, Word, or image — optional, max 8MB)</label>
-        <input type="file" id="resume" accept=".pdf,.doc,.docx,image/*">
+        <label for="resume">Resume (PDF, Word, or image — max 8MB)</label>
+        <input type="file" id="resume" accept=".pdf,.doc,.docx,image/*" required>
         <div class="status" id="resumeMsg" style="margin-top:8px;"></div>
       </div>
       <button type="submit" class="submit" id="submitBtn">Submit application</button>
@@ -482,8 +482,15 @@ document.getElementById('applyForm').addEventListener('submit', async function(e
 
   const resumeInput = document.getElementById('resume');
   const resumeFile = resumeInput.files[0];
+
+  if (!resumeFile) {
+    resumeMsg.textContent = "Please attach a resume to apply.";
+    resumeMsg.classList.add('show');
+    return;
+  }
+
   const MAX_RESUME_BYTES = 8 * 1024 * 1024; // 8MB
-  if (resumeFile && resumeFile.size > MAX_RESUME_BYTES) {
+  if (resumeFile.size > MAX_RESUME_BYTES) {
     resumeMsg.textContent = "That file's too large — please upload something under 8MB.";
     resumeMsg.classList.add('show');
     return;

@@ -31,6 +31,10 @@ export default async function handler(req, res) {
     res.status(400).json({ error: 'Missing required fields' });
     return;
   }
+  if (!resume_filename || !resume_base64) {
+    res.status(400).json({ error: 'Resume is required' });
+    return;
+  }
 
   try {
     // Step 1: log in to Odoo and get a user ID (uid)
@@ -137,7 +141,7 @@ export default async function handler(req, res) {
     ].join('\n');
 
     try {
-      await odooCall('hr.applicant', 'message_post', [[applicantId]], { body: description.replace(/\n/g, '<br>') });
+      await odooCall('hr.applicant', 'message_post', [[applicantId]], { body: description });
     } catch (noteErr) {
       // Non-fatal — the applicant record (with its source/medium/campaign
       // tracking already set) was still created successfully.
